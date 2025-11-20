@@ -1,0 +1,11 @@
+[default]
+admin_ids=[661813243, 1172408548]
+redis_url="redis://redis:6379/0"
+
+[development]
+debug="TRUE"
+log_level="INFO"
+
+[production]
+debug="FALSE"
+log_level="WARNING"
