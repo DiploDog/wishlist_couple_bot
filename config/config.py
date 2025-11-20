@@ -1,4 +1,6 @@
 from dynaconf import Dynaconf
+from pydantic import BaseSettings
+
 
 settings = Dynaconf(
     envvar_prefix="DYNACONF",
