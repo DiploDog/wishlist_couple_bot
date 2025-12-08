@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiogram>=3.22.0",
+    "alembic>=1.17.2",
     "asyncio>=4.0.0",
     "dishka>=1.7.2",
     "dynaconf>=3.2.12",

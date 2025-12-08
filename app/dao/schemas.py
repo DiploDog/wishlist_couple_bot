@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from decimal import Decimal
 from typing import Optional
-from dataclasses import dataclass
 
 from app.dao.enums import Marketplace, WishlistStatus, UserRole, Priority
 

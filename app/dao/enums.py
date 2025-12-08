@@ -6,8 +6,8 @@ class UserRole(Enum):
 
 class Marketplace(Enum):
     OZON = "ozon"
-    WILDBERRIES = "wb"
-    YAMARKET = "yandex.market"
+    WILDBERRIES = "wildberries"
+    YAMARKET = "market.yandex"
 
 class WishlistStatus(Enum):
     ACTIVE = "не куплен"
@@ -20,3 +20,8 @@ class Priority(Enum):
     LOW = "❤️"
     MEDIUM = "❤️❤️"
     HIGH = "❤️❤️❤️"
+
+class ProductAddAttrs(Enum):
+    NAME = "product_name"
+    PRICE = "product_price"
+    PRIORITY = "product_priority"
