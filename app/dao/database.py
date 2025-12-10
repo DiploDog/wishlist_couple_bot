@@ -1,13 +1,12 @@
 from typing import Optional 
-from dynaconf import settings
-from pydantic import NonNegativeFloat
+from config.config import settings
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession,  create_async_engine, async_sessionmaker
 
 from app.dao.models import Base
 
 class DataBaseManager:
     def __init__(self):
-        self.adsn: str = settings.db.db_async_url
+        self.adsn: str = settings.get("db.db_async_url")
         self.engine: AsyncEngine = None
         self.session: AsyncSession = None
     
@@ -18,6 +17,7 @@ class DataBaseManager:
                 echo=False,
                 future=True,
             )
+        return self.engine
     
     def create_session_maker(self) -> async_sessionmaker[AsyncSession]:
         engine = self.create_engine()
@@ -47,10 +47,10 @@ class DataBaseManager:
 
 db_manager: Optional[DataBaseManager] = None
 
-def get_db_manager(settings):
+def get_db_manager():
     global db_manager
     if db_manager is None:
-        db_manager = DataBaseManager(settings)
+        db_manager = DataBaseManager()
     return db_manager
 
 

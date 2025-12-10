@@ -64,3 +64,5 @@ class Product(Base):
     priority: Mapped[Priority] = mapped_column(SQLEnum(Priority))
     description: Mapped[Optional[str]] = mapped_column(String)
     image_url: Mapped[Optional[str]] = mapped_column(String)
+
+    user: Mapped["User"] = relationship(back_populates="products")

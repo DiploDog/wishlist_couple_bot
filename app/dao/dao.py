@@ -1,16 +1,16 @@
 from typing import Generic, List, Optional
-from sqlalchemy import select, delete, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.dao.base import BaseDAO
 from app.dao.schemas import (
     UserCreateSchema, UserUpdateSchema,
     ProductCreateSchema, ProductUpdateSchema
 )
 from app.dao.models import User, Product
 from app.dao.enums import WishlistStatus, Marketplace, Priority
+from app.dao.base import BaseDAO
 
 
-class UserDAO(Generic[User, UserCreateSchema, UserUpdateSchema]):
+class UserDAO(BaseDAO[User, UserCreateSchema, UserUpdateSchema]):
     def __init__(self, session: AsyncSession):
         super().__init__(User, session)
 
@@ -27,7 +27,7 @@ class UserDAO(Generic[User, UserCreateSchema, UserUpdateSchema]):
         return result.scalar_one_or_none()
     
 
-class ProductDAO(Generic[Product, ProductCreateSchema, ProductUpdateSchema]):
+class ProductDAO(BaseDAO[Product, ProductCreateSchema, ProductUpdateSchema]):
     def __init__(self, session: AsyncSession):
         super().__init__(Product, session)
     

@@ -8,10 +8,18 @@ dependencies = [
     "aiogram>=3.22.0",
     "alembic>=1.17.2",
     "asyncio>=4.0.0",
+    "asyncpg>=0.31.0",
     "dishka>=1.7.2",
     "dynaconf>=3.2.12",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.11.10",
     "pytest-playwright>=0.7.1",
     "redis>=7.1.0",
     "sqlalchemy>=2.0.44",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.8",
+    "ruff-lsp>=0.0.62",
 ]

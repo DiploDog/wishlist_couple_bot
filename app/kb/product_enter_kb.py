@@ -1,4 +1,3 @@
-from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton, InlineKeyboardMarkup
 from app.dao.enums import ProductAddAttrs, ProductAppend
 from app.kb import buttons

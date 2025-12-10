@@ -5,6 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
+.ruff_cache/
 
 # Virtual environments
 .venv
@@ -12,3 +13,4 @@ wheels/
 # Ignore dynaconf secret files
 .secrets.*
 .env
+*password*

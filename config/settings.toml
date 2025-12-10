@@ -4,7 +4,7 @@ redis_url="redis://localhost:6377/0"
 
 [development]
 debug="TRUE"
-log_level="INFO"
+log_level="DEBUG"
 
 [production]
 debug="FALSE"

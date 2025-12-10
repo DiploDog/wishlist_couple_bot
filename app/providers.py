@@ -1,5 +1,5 @@
 from typing import AsyncIterable
-from dynaconf import settings
+from config.config import settings
 from dishka import Provider, Scope, provide
 import redis.asyncio as redis
 from sqlalchemy.ext.asyncio import AsyncSession

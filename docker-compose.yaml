@@ -1,0 +1,99 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: wishlistbot
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: wishlistdb
+      PGDATA: /var/lib/postgresql/data/pgdata
+    restart: always
+    secrets:
+      - postgres_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "wishlistbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wishlist-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    command: --port 6377
+    ports:
+      - "6377:6377"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - wishlist-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 200M
+  
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: never
+    depends_on: 
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./config/settings.toml:/app/config/settings.toml:ro
+      - ./config/.secrets.toml:/app/config/.secrets.toml:ro
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
+    networks:
+      - wishlist-network
+    
+  bot:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./config/settings.toml:/app/config/settings.toml:ro
+      - ./config/.secrets.toml:/app/config/.secrets.toml:ro
+    networks:
+      - wishlist-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  wishlist-network:
+    driver: bridge
+
+secrets:
+  postgres_password:
+    file: ./config/postgres_password
+  dynaconf_secrets:
+    file: ./config/.secrets.toml

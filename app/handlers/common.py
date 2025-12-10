@@ -1,14 +1,14 @@
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram import Router, F, Bot
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from dishka.integrations.aiogram import inject, FromDishka
 
 from app.states.states import AddProductState
 from app.texts import texts
 from app.utils import parsing, db as db_utils
-from app.kb import product_enter_kb, confirm_kb
+from app.kb import product_enter_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend
 
 
@@ -38,8 +38,8 @@ async def process_product_url(message: Message, state: AddProductState):
         reply_markup=product_enter_kb.enter_product_menu_kb(),
     )
 
-@inject
 @router.callback_query(AddProductState.start_adding)
+@inject
 async def process_product_attrs(
     callback: CallbackQuery, 
     state: AddProductState, 
