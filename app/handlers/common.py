@@ -8,6 +8,7 @@ from dishka.integrations.aiogram import inject, FromDishka
 from app.states.states import AddProductState
 from app.texts import texts
 from app.utils import parsing, db as db_utils
+from app.misc import product_answer
 from app.kb import product_enter_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend
 
@@ -32,11 +33,14 @@ async def process_product_url(message: Message, state: AddProductState):
         await message.answer(texts.INVALID_URL)
         return
     
-    await state.set_data({"marketplace": marketplace, "url": url})
     await state.set_state(AddProductState.start_adding)
-    await message.answer(texts.PRODUCT_ATTRS_ENTER, 
+    ppu_message_id = await message.answer(texts.PRODUCT_ATTRS_ENTER, 
         reply_markup=product_enter_kb.enter_product_menu_kb(),
     )
+    await state.set_data({
+        "marketplace": marketplace, 
+        "url": url,
+        "ppu_message_id": ppu_message_id.message_id})
 
 @router.callback_query(AddProductState.start_adding)
 @inject
@@ -47,19 +51,36 @@ async def process_product_attrs(
     session: FromDishka[AsyncSession]):
 
     await callback.answer()
+    data = await state.get_data()
+    ppu_msg_id = data.get("ppu_message_id")
     match callback.data:
         case ProductAddAttrs.NAME.value:
-            await state.update_data(selected_attr=ProductAddAttrs.NAME.value)
-            await state.set_state(AddProductState.add_attribute)
-            await callback.message.answer(texts.PRODUCT_NAME_ENTER)
+            await product_answer(
+                product_attr=ProductAddAttrs.NAME.value,
+                callback=callback, bot=bot, state=state, 
+                state_name=AddProductState.add_attribute,
+                message_id=ppu_msg_id,
+                text=texts.PRODUCT_NAME_ENTER
+            )
         case ProductAddAttrs.PRICE.value:
-            await state.update_data(selected_attr=ProductAddAttrs.PRICE.value)
-            await state.set_state(AddProductState.add_attribute)
-            await callback.message.answer(texts.PRODUCT_PRICE_ENTER)
+            await product_answer(
+                product_attr=ProductAddAttrs.PRICE.value,
+                callback=callback, bot=bot, state=state, 
+                state_name=AddProductState.add_attribute,
+                message_id=ppu_msg_id,
+                text=texts.PRODUCT_PRICE_ENTER,
+                reply_markup=None
+            )
         case ProductAddAttrs.PRIORITY.value:
-            await state.update_data(selected_attr=ProductAddAttrs.PRIORITY.value)
-            await state.set_state(AddProductState.add_attribute)
-            await callback.message.answer(texts.PRODUCT_PRIORITY_ENTER)
+            await product_answer(
+                product_attr=ProductAddAttrs.PRIORITY.value,
+                callback=callback, bot=bot, state=state, 
+                state_name=AddProductState.add_attribute,
+                message_id=ppu_msg_id,
+                text=texts.PRODUCT_PRIORITY_ENTER,
+                # TODO: добавить новую клавиатуру с приоритетами
+                reply_markup=None
+            )
         case ProductAppend.CANCEL.value:
             await state.clear()
             await bot.edit_message_text(
@@ -69,7 +90,6 @@ async def process_product_attrs(
                 reply_markup=None,
             )
         case ProductAppend.CONFIRM.value:
-            data = await state.get_data()
             if INITIAL_PRODUCT_ATTRS_AMOUNT > \
                 sum(value.startswith("product") for value in data):
                 await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
