@@ -15,7 +15,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "wishlistbot"]
+      test: ["CMD-SHELL", "pg_isready -U wishlistbot -d wishlistdb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,7 +36,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,7 +53,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: never
+    restart: "no"
     depends_on: 
       postgres:
         condition: service_healthy
@@ -64,19 +64,29 @@ services:
       - ./alembic:/app/alembic
     networks:
       - wishlist-network
+    environment:
+      DYNACONF_ENV: production
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    
     
   bot:
     build: 
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - postgres
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./config/settings.toml:/app/config/settings.toml:ro
       - ./config/.secrets.toml:/app/config/.secrets.toml:ro
     networks:
       - wishlist-network
+    environment:
+      DYNACONF_ENV: production
     deploy:
       resources:
         limits:

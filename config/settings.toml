@@ -9,3 +9,4 @@ log_level="DEBUG"
 [production]
 debug="FALSE"
 log_level="WARNING"
+redis_url="redis://redis:6377/0"

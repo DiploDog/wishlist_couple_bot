@@ -15,7 +15,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "wishlistbot"]
+      test: ["CMD-SHELL", "pg_isready -U wishlistbot -d wishlistdb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,7 +36,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,41 +48,7 @@ services:
         limits:
           cpus: "0.2"
           memory: 200M
-  
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: never
-    depends_on: 
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./config/settings.toml:/app/config/settings.toml:ro
-      - ./config/.secrets.toml:/app/config/.secrets.toml:ro
-    networks:
-      - wishlist-network
-    command: ["bash", "-lc", "alembic", "upgrade", "head"]
     
-  bot:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./config/settings.toml:/app/config/settings.toml:ro
-      - ./config/.secrets.toml:/app/config/.secrets.toml:ro
-    networks:
-      - wishlist-network
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 1G
-
-
 volumes:
   redis_data:
   postgres_data:
@@ -94,5 +60,3 @@ networks:
 secrets:
   postgres_password:
     file: ./config/postgres_password
-  dynaconf_secrets:
-    file: ./config/.secrets.toml
