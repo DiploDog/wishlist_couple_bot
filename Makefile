@@ -15,8 +15,8 @@ help:
 		@echo "  migrate		- Run database migrations"
 		@echo "-----------"
 
-runall-dev:
-		DYNACONF_ENV=development docker compose down && docker compose -f docker-compose.dev.yaml up -d && .venv/bin/python3.12 main.py
+run-dev-infra:
+		docker compose down && docker compose -f docker-compose.dev.yaml up -d
 
 run-local:
 		DYNACONF_ENV=development .venv/bin/python3.12 main.py

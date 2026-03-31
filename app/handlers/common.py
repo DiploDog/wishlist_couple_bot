@@ -9,7 +9,7 @@ from app.states.states import AddProductState
 from app.texts import texts
 from app.utils import parsing, db as db_utils
 from app.misc import product_answer
-from app.kb import product_enter_kb
+from app.kb import enter_product_menu_kb, enter_priority_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend
 
 
@@ -35,7 +35,7 @@ async def process_product_url(message: Message, state: AddProductState):
     
     await state.set_state(AddProductState.start_adding)
     ppu_message_id = await message.answer(texts.PRODUCT_ATTRS_ENTER, 
-        reply_markup=product_enter_kb.enter_product_menu_kb(),
+        reply_markup=enter_product_menu_kb(),
     )
     await state.set_data({
         "marketplace": marketplace, 
@@ -58,28 +58,27 @@ async def process_product_attrs(
             await product_answer(
                 product_attr=ProductAddAttrs.NAME.value,
                 callback=callback, bot=bot, state=state, 
-                state_name=AddProductState.add_attribute,
+                state_name=AddProductState,
                 message_id=ppu_msg_id,
-                text=texts.PRODUCT_NAME_ENTER
+                text=texts.PRODUCT_NAME_ENTER,
             )
         case ProductAddAttrs.PRICE.value:
             await product_answer(
                 product_attr=ProductAddAttrs.PRICE.value,
                 callback=callback, bot=bot, state=state, 
-                state_name=AddProductState.add_attribute,
+                state_name=AddProductState,
                 message_id=ppu_msg_id,
                 text=texts.PRODUCT_PRICE_ENTER,
-                reply_markup=None
             )
         case ProductAddAttrs.PRIORITY.value:
             await product_answer(
                 product_attr=ProductAddAttrs.PRIORITY.value,
                 callback=callback, bot=bot, state=state, 
-                state_name=AddProductState.add_attribute,
+                state_name=AddProductState,
                 message_id=ppu_msg_id,
                 text=texts.PRODUCT_PRIORITY_ENTER,
                 # TODO: добавить новую клавиатуру с приоритетами
-                reply_markup=None
+                reply_markup=enter_priority_kb(),
             )
         case ProductAppend.CANCEL.value:
             await state.clear()
@@ -119,5 +118,5 @@ async def add_product_attribute(message: Message, state: AddProductState):
     await state.set_state(AddProductState.start_adding)
     await message.answer(
         text=texts.PRODUCT_ATTRS_ENTER,
-        reply_markup=product_enter_kb.enter_product_menu_kb(data),
+        reply_markup=enter_product_menu_kb(data),
     )

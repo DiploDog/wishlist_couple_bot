@@ -2,6 +2,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton, 
 from app.dao.enums import ProductAddAttrs, ProductAppend
 from app.kb import buttons
 
+
 def enter_product_menu_kb(data: dict = {}) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.row(
