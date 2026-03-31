@@ -20,4 +20,3 @@ async def product_answer(
         message_id=message_id,
         text=text, reply_markup=reply_markup
     )
-    await state.set_state(state_name.start_adding)

@@ -15,6 +15,12 @@ from app.dao.enums import ProductAddAttrs, ProductAppend
 
 INITIAL_PRODUCT_ATTRS_AMOUNT = 3
 
+ATTR_CONFIG = {
+    ProductAddAttrs.NAME.value: (texts.PRODUCT_NAME_ENTER, None),
+    ProductAddAttrs.PRICE.value: (texts.PRODUCT_PRICE_ENTER, None),
+    ProductAddAttrs.PRIORITY.value: (texts.PRODUCT_PRIORITY_ENTER, enter_priority_kb()),
+}
+
 logger = logging.getLogger(__name__)
 router = Router()
 
@@ -51,53 +57,46 @@ async def process_product_attrs(
     session: FromDishka[AsyncSession]):
 
     await callback.answer()
+
     data = await state.get_data()
     ppu_msg_id = data.get("ppu_message_id")
-    match callback.data:
-        case ProductAddAttrs.NAME.value:
-            await product_answer(
-                product_attr=ProductAddAttrs.NAME.value,
-                callback=callback, bot=bot, state=state, 
-                state_name=AddProductState,
-                message_id=ppu_msg_id,
-                text=texts.PRODUCT_NAME_ENTER,
-            )
-        case ProductAddAttrs.PRICE.value:
-            await product_answer(
-                product_attr=ProductAddAttrs.PRICE.value,
-                callback=callback, bot=bot, state=state, 
-                state_name=AddProductState,
-                message_id=ppu_msg_id,
-                text=texts.PRODUCT_PRICE_ENTER,
-            )
-        case ProductAddAttrs.PRIORITY.value:
-            await product_answer(
-                product_attr=ProductAddAttrs.PRIORITY.value,
-                callback=callback, bot=bot, state=state, 
-                state_name=AddProductState,
-                message_id=ppu_msg_id,
-                text=texts.PRODUCT_PRIORITY_ENTER,
-                # TODO: добавить новую клавиатуру с приоритетами
-                reply_markup=enter_priority_kb(),
-            )
-        case ProductAppend.CANCEL.value:
-            await state.clear()
-            await bot.edit_message_text(
-                chat_id=callback.message.chat.id,
-                message_id=callback.message.message_id,
-                text=texts.PRODUCT_APPEND_CANCEL,
-                reply_markup=None,
-            )
-        case ProductAppend.CONFIRM.value:
-            if INITIAL_PRODUCT_ATTRS_AMOUNT > \
-                sum(value.startswith("product") for value in data):
-                await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
-                return
-            
-            await db_utils.create_product_record(session, data)
-            await state.clear()
-            await callback.answer(texts.PRODUCT_APPEND_SUCCESS, show_alert=True)
-            
+    cb_data = callback.data
+
+    cfg = ATTR_CONFIG.get(cb_data)
+    if cfg:
+        text, reply_markup = cfg
+        await product_answer(
+            product_attr=cb_data,
+            callback=callback,
+            bot=bot,
+            state=state,
+            state_name=AddProductState,
+            message_id=ppu_msg_id,
+            text=text,
+            reply_markup=reply_markup,
+        )
+        return
+
+    if cb_data == ProductAppend.CANCEL.value:
+        #await callback.answer()
+        await state.clear()
+        await bot.edit_message_text(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            text=texts.PRODUCT_APPEND_CANCEL,
+            reply_markup=None,
+        )
+        return
+        
+    if cb_data == ProductAppend.CONFIRM.value:
+        required_attrs = {attr.value for attr in ProductAddAttrs}
+        if not required_attrs.issubset(data.keys()):
+            await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
+            return
+
+        await db_utils.create_product_record(session, data)
+        await state.clear()
+        await callback.answer(texts.PRODUCT_APPEND_SUCCESS, show_alert=True)
 
 
 @router.message(AddProductState.add_attribute)
