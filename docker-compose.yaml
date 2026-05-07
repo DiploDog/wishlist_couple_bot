@@ -65,7 +65,7 @@ services:
     networks:
       - wishlist-network
     environment:
-      DYNACONF_ENV: production
+      ENV_FOR_DYNACONF: production
     command: ["python", "-m", "alembic", "upgrade", "head"]
     
     

@@ -10,7 +10,7 @@ from app.texts import texts
 from app.utils import parsing, db as db_utils
 from app.misc import product_answer
 from app.kb import enter_product_menu_kb, enter_priority_kb
-from app.dao.enums import ProductAddAttrs, ProductAppend
+from app.dao.enums import ProductAddAttrs, ProductAppend, Priority
 
 
 INITIAL_PRODUCT_ATTRS_AMOUNT = 3
@@ -18,7 +18,10 @@ INITIAL_PRODUCT_ATTRS_AMOUNT = 3
 ATTR_CONFIG = {
     ProductAddAttrs.NAME.value: (texts.PRODUCT_NAME_ENTER, None),
     ProductAddAttrs.PRICE.value: (texts.PRODUCT_PRICE_ENTER, None),
-    ProductAddAttrs.PRIORITY.value: (texts.PRODUCT_PRIORITY_ENTER, enter_priority_kb()),
+}
+
+PRIORITY_CONFIG = {
+    Priority.LOW.value, Priority.MEDIUM.value, Priority.HIGH.value,
 }
 
 logger = logging.getLogger(__name__)
@@ -40,13 +43,13 @@ async def process_product_url(message: Message, state: AddProductState):
         return
     
     await state.set_state(AddProductState.start_adding)
-    ppu_message_id = await message.answer(texts.PRODUCT_ATTRS_ENTER, 
+    ppu_msg = await message.answer(texts.PRODUCT_ATTRS_ENTER, 
         reply_markup=enter_product_menu_kb(),
     )
     await state.set_data({
         "marketplace": marketplace, 
         "url": url,
-        "ppu_message_id": ppu_message_id.message_id})
+    })
 
 @router.callback_query(AddProductState.start_adding)
 @inject
@@ -59,8 +62,27 @@ async def process_product_attrs(
     await callback.answer()
 
     data = await state.get_data()
-    ppu_msg_id = data.get("ppu_message_id")
     cb_data = callback.data
+
+    if cb_data == ProductAddAttrs.PRIORITY.value:
+        await bot.edit_message_text(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            text=texts.PRODUCT_PRIORITY_ENTER,
+            reply_markup=enter_priority_kb(),
+        )
+        return
+        
+    if cb_data in PRIORITY_CONFIG:
+        await state.update_data(product_priority=cb_data)
+        updated_data = await state.get_data()
+        await bot.edit_message_text(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            text=texts.PRODUCT_ATTRS_ENTER,
+            reply_markup=enter_product_menu_kb(updated_data),
+        )
+        return
 
     cfg = ATTR_CONFIG.get(cb_data)
     if cfg:
@@ -71,7 +93,7 @@ async def process_product_attrs(
             bot=bot,
             state=state,
             state_name=AddProductState,
-            message_id=ppu_msg_id,
+            message_id=callback.message.message_id,
             text=text,
             reply_markup=reply_markup,
         )
@@ -110,8 +132,6 @@ async def add_product_attribute(message: Message, state: AddProductState):
             await state.update_data(product_name=message.text)
         case ProductAddAttrs.PRICE.value:
             await state.update_data(product_price=message.text)
-        case ProductAddAttrs.PRIORITY.value:
-            await state.update_data(product_priority=message.text)
 
     data = await state.get_data()
     await state.set_state(AddProductState.start_adding)

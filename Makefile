@@ -32,8 +32,8 @@ lint-fix:
 
 firstrun-prepare:
 		docker compose up -d postgres redis
-		docker compose run --rm migrate python -m alembic revision --autogenerate -m 'Initial revision'
 		docker compose run --rm migrate python -m alembic upgrade head
+		docker compose run --rm migrate python -m alembic revision --autogenerate -m 'Initial revision'
 
 migrate:
 		docker compose run --rm migrate python -m alembic revision --autogenerate -m '$(MSG)'
