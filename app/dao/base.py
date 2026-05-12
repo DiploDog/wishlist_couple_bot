@@ -87,7 +87,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC):
 
         return result.scalar() is not None
 
-    def __filter_query(self, query: Select, **filters) -> Select:
+    def __filter_query(self, query: Select, filters: dict) -> Select:
         for k, v in filters.items():
             if hasattr(self.model, k) and v is not None:
                 query = query.where(getattr(self.model, k) == v)

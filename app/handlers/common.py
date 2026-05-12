@@ -11,6 +11,7 @@ from app.utils import parsing, db as db_utils
 from app.misc import product_answer
 from app.kb import enter_product_menu_kb, enter_priority_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend, Priority
+from app.dao.dao import UserDAO
 
 
 INITIAL_PRODUCT_ATTRS_AMOUNT = 3
@@ -28,7 +29,12 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 @router.message(CommandStart())
-async def start_command(message: Message):
+@inject
+async def start_command(message: Message, session: FromDishka[AsyncSession]):
+    user_dao = UserDAO(session)
+    user, created = await user_dao.get_or_create(message.from_user)
+    if created:
+        await session.commit()
     await message.answer(texts.HELLO.format(
         username=message.from_user.first_name or \
             message.from_user.username
@@ -100,7 +106,6 @@ async def process_product_attrs(
         return
 
     if cb_data == ProductAppend.CANCEL.value:
-        #await callback.answer()
         await state.clear()
         await bot.edit_message_text(
             chat_id=callback.message.chat.id,
@@ -116,9 +121,15 @@ async def process_product_attrs(
             await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
             return
 
-        await db_utils.create_product_record(session, data)
+        await db_utils.create_product_record(session, data, callback.from_user.id)
         await state.clear()
-        await callback.answer(texts.PRODUCT_APPEND_SUCCESS, show_alert=True)
+        await callback.answer()
+        await bot.edit_message_text(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            text=texts.PRODUCT_APPEND_SUCCESS,
+            reply_markup=None,
+        )
 
 
 @router.message(AddProductState.add_attribute)

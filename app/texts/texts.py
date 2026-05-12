@@ -25,5 +25,10 @@ PRODUCT_NAME_ENTER = "Введите название товара: 👇🏻"
 PRODUCT_PRICE_ENTER = "Введите цену товара в рублях: 👇🏻"
 PRODUCT_PRIORITY_ENTER = "Выберите приоритет товара: 👇🏻"
 PRODUCT_APPEND_CANCEL = "Добавление товара отменено. 😔"
-PRODUCT_APPEND_SUCCESS = "Товар успешно добавлен! 😊"
 PRODUCT_ATTRS_NOT_FULL = "⚠️ Пожалуйста, заполните все характеристики товара. ⚠️"
+PRODUCT_APPEND_SUCCESS = "✅ <b>Товар добавлен!</b>\n\n"\
+    "📦 <b>{product_name}</b>\n"\
+    "💰 {product_price} ₽\n"\
+    "🛒 {marketplace}\n"\
+    "⭐ {product_priority}\n"\
+    "🔗 <a href=\"{url}\">Ссылка на товар</a>"

@@ -26,7 +26,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(tz=timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=None, onupdate=lambda: datetime.now(tz=timezone.utc))
+        DateTime(timezone=True), default=None, 
+        onupdate=lambda: datetime.now(tz=timezone.utc), nullable=True)
 
     @declared_attr.directive
     def __tablename__(cls) -> str:

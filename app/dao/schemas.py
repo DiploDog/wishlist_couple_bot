@@ -24,6 +24,7 @@ class UserReadSchema(BaseModel):
     first_name: Optional[str]
 
 class ProductCreateSchema(BaseModel):
+    user_id: int
     name: str
     price: Decimal
     url: str

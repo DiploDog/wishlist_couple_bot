@@ -6,7 +6,7 @@ from aiogram.types import TelegramObject, Message, CallbackQuery
 
 
 class WhitelistMiddleware(BaseMiddleware):
-    def __init__(self, allowed_user_ids: set[int]) -> None:
+    def __init__(self, allowed_user_ids: list[int]) -> None:
         self.allowed_user_ids = allowed_user_ids
 
     async def __call__(
