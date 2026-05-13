@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 from typing import Optional
 
@@ -42,6 +42,9 @@ class ProductUpdateSchema(BaseModel):
     priority: Optional[Priority] = None
 
 class ProductReadSchema(BaseModel):
+
+    model_config = ConfigDict(from_attributes=True)
+
     name: str
     price: Decimal
     url: str

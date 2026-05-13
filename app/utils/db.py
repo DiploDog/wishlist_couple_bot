@@ -23,9 +23,9 @@ async def create_product_record(session: AsyncSession, data: dict, telegram_id: 
         priority=data.get("product_priority"),
     )
     try:
-        await product_dao.create(product_create_schema)
+        product = await product_dao.create(product_create_schema)
         await session.commit()
-        return True
+        return product
     except Exception as e:
         logger.error(f"Error creating product record: {e}", exc_info=True)
         await session.rollback()

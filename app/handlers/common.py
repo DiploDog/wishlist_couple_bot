@@ -6,11 +6,12 @@ from aiogram.types import Message, CallbackQuery
 from dishka.integrations.aiogram import inject, FromDishka
 
 from app.states.states import AddProductState
-from app.texts import texts
+from app.texts import texts, cards
 from app.utils import parsing, db as db_utils
 from app.misc import product_answer
 from app.kb import enter_product_menu_kb, enter_priority_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend, Priority
+from app.dao.schemas import ProductReadSchema
 from app.dao.dao import UserDAO
 
 
@@ -121,13 +122,22 @@ async def process_product_attrs(
             await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
             return
 
-        await db_utils.create_product_record(session, data, callback.from_user.id)
+        product = await db_utils.create_product_record(session, data, callback.from_user.id)
+        product_schema = ProductReadSchema.model_validate(product)
         await state.clear()
         await callback.answer()
+
+        product_card = cards.PRODUCT_APPEND_CARD.format(
+            product_name = product_schema.name,
+            product_price = product_schema.price,
+            marketplace = product_schema.marketplace.value,
+            product_priority = product_schema.priority.value,
+            url = product_schema.url,
+        )
         await bot.edit_message_text(
             chat_id=callback.message.chat.id,
             message_id=callback.message.message_id,
-            text=texts.PRODUCT_APPEND_SUCCESS,
+            text=product_card,
             reply_markup=None,
         )
 
