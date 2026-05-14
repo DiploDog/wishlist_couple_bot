@@ -45,10 +45,46 @@ class ProductDAO(BaseDAO[Product, ProductCreateSchema, ProductUpdateSchema]):
     def __init__(self, session: AsyncSession):
         super().__init__(Product, session)
 
-    async def get_by_user_id(self, user_id: int) -> List[Product]:
-        query = select(Product).where(Product.user_id == user_id)
+    async def get_by_user_id(self, 
+        user_id: int,
+        page: int = 1,
+        limit: int = 10
+    ) -> List[Product]:
+
+        offset = (page - 1) * limit
+        query = (
+            select(Product)
+            .where(Product.user_id == user_id)
+            .where(Product.whishlist_status != WishlistStatus.DELETED)
+            .order_by(Product.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
         result = await self.session.execute(query)
         return list(result.scalars().all())
+    
+    async def count_by_user_id(self, user_id: int) -> int:
+
+        from sqlalchemy import func
+
+        query = (
+            select(func.count(Product.id))
+            .where(Product.user_id == user_id)
+            .where(Product.whishlist_status != WishlistStatus.DELETED)
+        )
+        result = await self.session.execute(query)
+        return result.scalar() or 0
+
+    async def get_last_added(self, user_id: int) -> List[Product]:
+        query = (
+            select(Product)
+            .where(Product.user_id == user_id)
+            .where(Product.whishlist_status != WishlistStatus.DELETED)
+            .order_by(Product.created_at.desc())
+            .limit(1)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_by_status(self, status: WishlistStatus) -> List[Product]:
         query = select(Product).where(Product.whishlist_status == status)

@@ -9,6 +9,7 @@ from dishka import make_async_container
 from dishka.integrations.aiogram import setup_dishka
 
 from app.handlers.common import router as common_router
+from app.handlers.wishlist import wishlist_router
 from app.providers import DataBaseProvider, RedisProvider
 from app.middlewares.restriction import WhitelistMiddleware
 
@@ -41,6 +42,7 @@ async def main():
     )
 
     dp.include_router(common_router)
+    dp.include_router(wishlist_router)
 
     dp.update.middleware(WhitelistMiddleware(allowed_user_ids=settings.allowed_tg_ids))
 
