@@ -7,6 +7,4 @@ class AddProductState(StatesGroup):
     confirm_adding = State()
 
 class EditProductState(StatesGroup):
-    choose_field = State()
     edit_field = State()
-    confirm_edit = State()

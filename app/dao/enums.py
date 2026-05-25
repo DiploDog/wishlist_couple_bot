@@ -29,3 +29,11 @@ class ProductAddAttrs(Enum):
 class ProductAppend(Enum):
     CONFIRM = "product_confirm"
     CANCEL = "product_cancel"
+
+class ProductEditAttrs(str, Enum):
+    EDIT_NAME = "edit_name"
+    EDIT_PRICE = "edit_price"
+    EDIT_PRIORITY = "edit_priority"
+    EDIT_STATUS = "edit_status"
+    EDIT_DESCRIPTION = "edit_description"
+    EDIT_DELETE = "edit_delete"

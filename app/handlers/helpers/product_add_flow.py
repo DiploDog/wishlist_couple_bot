@@ -1,11 +1,12 @@
 from aiogram import Bot
-from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery, ReplyKeyboardMarkup
 
 
 async def product_answer(
     product_attr: str, 
-    state: State,
+    state: FSMContext,
     state_name: StatesGroup, 
     bot: Bot,
     callback: CallbackQuery,

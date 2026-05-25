@@ -45,10 +45,11 @@ class ProductDAO(BaseDAO[Product, ProductCreateSchema, ProductUpdateSchema]):
     def __init__(self, session: AsyncSession):
         super().__init__(Product, session)
 
-    async def get_by_user_id(self, 
+    async def get_by_user_id(self,
         user_id: int,
         page: int = 1,
-        limit: int = 10
+        limit: int = 10,
+        status_filter: str = "",
     ) -> List[Product]:
 
         offset = (page - 1) * limit
@@ -56,14 +57,14 @@ class ProductDAO(BaseDAO[Product, ProductCreateSchema, ProductUpdateSchema]):
             select(Product)
             .where(Product.user_id == user_id)
             .where(Product.whishlist_status != WishlistStatus.DELETED)
-            .order_by(Product.created_at.desc())
-            .offset(offset)
-            .limit(limit)
         )
+        if status_filter:
+            query = query.where(Product.whishlist_status == WishlistStatus(status_filter))
+        query = query.order_by(Product.created_at.desc()).offset(offset).limit(limit)
         result = await self.session.execute(query)
         return list(result.scalars().all())
-    
-    async def count_by_user_id(self, user_id: int) -> int:
+
+    async def count_by_user_id(self, user_id: int, status_filter: str = "") -> int:
 
         from sqlalchemy import func
 
@@ -72,10 +73,12 @@ class ProductDAO(BaseDAO[Product, ProductCreateSchema, ProductUpdateSchema]):
             .where(Product.user_id == user_id)
             .where(Product.whishlist_status != WishlistStatus.DELETED)
         )
+        if status_filter:
+            query = query.where(Product.whishlist_status == WishlistStatus(status_filter))
         result = await self.session.execute(query)
         return result.scalar() or 0
 
-    async def get_last_added(self, user_id: int) -> List[Product]:
+    async def get_last_added(self, user_id: int) -> Optional[Product]:
         query = (
             select(Product)
             .where(Product.user_id == user_id)

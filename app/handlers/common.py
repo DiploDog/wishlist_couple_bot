@@ -8,7 +8,7 @@ from dishka.integrations.aiogram import inject, FromDishka
 from app.states.states import AddProductState
 from app.texts import texts, cards
 from app.utils import parsing, db as db_utils
-from app.misc import product_answer
+from app.handlers.helpers import product_answer
 from app.kb import enter_product_menu_kb, enter_priority_kb
 from app.dao.enums import ProductAddAttrs, ProductAppend, Priority
 from app.dao.schemas import ProductReadSchema
@@ -122,7 +122,7 @@ async def process_product_attrs(
             await callback.answer(texts.PRODUCT_ATTRS_NOT_FULL, show_alert=True)
             return
 
-        product = await db_utils.create_product_record(session, data, callback.from_user.id)
+        product = await db_utils.create_product_record(session, data, callback.from_user.id, bot=bot)
         product_schema = ProductReadSchema.model_validate(product)
         await state.clear()
         await callback.answer()

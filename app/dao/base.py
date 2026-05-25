@@ -52,12 +52,13 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC):
         id: int, 
         object_in: UpdateSchemaType) -> Optional[ModelType]:
         
-        object_data = object_in.model_dump()
+        object_data = object_in.model_dump(exclude_unset=True)
         if not object_data:
             return await self.get(id)
 
-        await update(self.model).where(
+        query = update(self.model).where(
             self.model.id == id).values(**object_data)
+        await self.session.execute(query)
         await self.session.flush()
 
         return await self.get(id)

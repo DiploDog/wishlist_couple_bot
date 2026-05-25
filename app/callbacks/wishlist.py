@@ -4,6 +4,7 @@ from aiogram.filters.callback_data import CallbackData
 class WishlistPageCallback(CallbackData, prefix="wishlist_page"):
     owner_tg_id: int
     page: int
+    status_filter: str = ""
 
 
 class WishlistViewCallback(CallbackData, prefix="wishlist_view"):
@@ -18,3 +19,5 @@ class ProductActionCallback(CallbackData, prefix="wishlist_action"):
     owner_tg_id: int
     page: int
 
+class DeleteConfirmCallback(CallbackData, prefix="delete_confirm"):
+    confirmed: bool

@@ -35,7 +35,9 @@ class ProductCreateSchema(BaseModel):
     image_url: Optional[str] = None
 
 class ProductUpdateSchema(BaseModel):
+    name: Optional[str] = None
     price: Optional[Decimal] = None
+    description: Optional[str] = None
     marketplace: Optional[Marketplace] = None
     image_url: Optional[str] = None
     whishlist_status: Optional[WishlistStatus] = None
